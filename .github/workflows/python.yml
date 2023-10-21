@@ -100,4 +100,4 @@ jobs:
         env:
           DOCSID_IS_CI: "1"
         run: |
-          make pytest
+          make pytest_xml
