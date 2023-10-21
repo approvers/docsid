@@ -1,7 +1,7 @@
-import argparse
 import io
 import os
 import subprocess
+import sys
 import threading
 from typing import Callable
 
@@ -100,12 +100,9 @@ def execute_command(command_list: list) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Execute a shell command.")
-    parser.add_argument("command", nargs="+", help="Command to execute")
+    command_list = sys.argv[1:]
 
-    args = parser.parse_args()
-
-    execute_command(args.command)
+    execute_command(command_list)
 
 
 if __name__ == "__main__":
