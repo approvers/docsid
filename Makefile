@@ -77,7 +77,7 @@ black_check:
 	docker compose run --rm api bash -c "python entry.py black ./ --check"
 
 .PHONY: pytest_html
-pytest_html_report:
+pytest_html:
 	docker compose run --rm api bash -c "pytest -v tests/ --cov=./src/ --html=report.html"
 
 .PHONY: pytest_xml
