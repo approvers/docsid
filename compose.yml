@@ -1,0 +1,49 @@
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: ./docker/postgres/Dockerfile
+    networks:
+      docsid_nw:
+    ports:
+      - "54321:5432"
+    environment:
+      - POSTGRES_USER=${DOCSID_POSTGRES_USER}
+      - POSTGRES_PASSWORD=${DOCSID_POSTGRES_PASSWORD}
+    volumes:
+      - ./docker/postgres/initdb:/docker-entrypoint-initdb.d
+      - docsid_postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    tty: true
+
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/python/Dockerfile
+      target: development
+    volumes:
+      # Mount Volume to separate .venv from the host
+      - python_venv:/deploy/.venv
+      - ./:/deploy
+    working_dir: /deploy
+    command: >
+      bash -c "
+      python entry.py sleep infinity
+      "
+    restart: unless-stopped
+    tty: true
+
+networks:
+  docsid_nw:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+    ipam:
+      driver: default
+
+volumes:
+  python_venv:
+    driver: local
+
+  docsid_postgres_data:
+    driver: local
