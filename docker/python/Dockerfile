@@ -49,7 +49,7 @@ COPY poetry.lock pyproject.toml ./
 
 # install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
 RUN poetry config virtualenvs.in-project false \
-    && poetry install --with dev
+    && poetry install
 
 
 # `development` image is used during development / testing
@@ -66,7 +66,7 @@ COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
 # quicker install as runtime deps are already installed
 RUN poetry config virtualenvs.in-project false \
-    && poetry install --with dev
+    && poetry update --with dev
 
 # will become mountpoint of our code
 ENV PYTHONPATH="$PYTHONPATH:/deploy"
