@@ -13,11 +13,12 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DEFAULT_TIMEOUT=100 \
     \
     # poetry
+    # https://python-poetry.org/docs/configuration/#using-environment-variables
     # make poetry install to this location
     POETRY_HOME="/opt/poetry" \
     # make poetry create the virtual environment in the project's root
     # it gets named `.venv`
-    POETRY_VIRTUALENVS_IN_PROJECT=false \
+    POETRY_VIRTUALENVS_IN_PROJECT=true \
     # do not ask any interactive question
     POETRY_NO_INTERACTION=1 \
     \
@@ -38,7 +39,11 @@ RUN apt-get update \
         # deps for installing poetry
         curl \
         # deps for building python deps
-        build-essential
+        build-essential \
+        # psycopg2 dependencies
+        libpq-dev \
+        # Required for migrations
+        postgresql-client
 
 # install poetry - respects $POETRY_VERSION & $POETRY_HOME
 RUN curl -sSL https://install.python-poetry.org | python3 -
@@ -48,14 +53,14 @@ WORKDIR $PYSETUP_PATH
 COPY poetry.lock pyproject.toml ./
 
 # install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
-RUN poetry config virtualenvs.in-project false \
-    && poetry install
+RUN poetry install
 
 
 # `development` image is used during development / testing
 FROM python-base as development
 
 ENV LC_ALL=en_US.UTF-8 \
+    TZ=JST-9 \
     TERM=xtermdocker-attachingdocker-attaching
 
 WORKDIR $PYSETUP_PATH
@@ -65,8 +70,7 @@ COPY --from=builder-base $POETRY_HOME $POETRY_HOME
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
 # quicker install as runtime deps are already installed
-RUN poetry config virtualenvs.in-project false \
-    && poetry update --with dev
+RUN poetry update --with dev
 
 # will become mountpoint of our code
 ENV PYTHONPATH="$PYTHONPATH:/deploy"
@@ -77,9 +81,11 @@ WORKDIR /deploy
 FROM python-base as production
 
 ENV LC_ALL=en_US.UTF-8 \
+    TZ=JST-9 \
     TERM=xtermdocker-attachingdocker-attaching
 
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
 # will become mountpoint of our code
 ENV PYTHONPATH="$PYTHONPATH:/deploy"
+WORKDIR /deploy
