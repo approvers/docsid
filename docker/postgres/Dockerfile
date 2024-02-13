@@ -1,4 +1,4 @@
-FROM postgres:14.5-bullseye
+FROM postgres:16.2-bullseye
 
 ENV LC_ALL=en_US.UTF-8 \
     TZ=JST-9 \
